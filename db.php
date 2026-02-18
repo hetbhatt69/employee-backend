@@ -4,7 +4,7 @@ $host = "aws-1-ap-southeast-2.pooler.supabase.com";
 $port = "5432";
 $dbname = "postgres";
 $user = "postgres.wjrdxtzuiywrmuljsltr";
-$password = "YOUR_DATABASE_PASSWORD";  // ← paste your Supabase DB password
+$password = "Hey@28bhatt";  // ← paste your Supabase DB password
 
 try {
     $conn = new PDO(
