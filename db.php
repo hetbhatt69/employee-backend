@@ -1,15 +1,22 @@
 <?php
-$host = "aws-1-ap-southeast-2.pooler.supabase.com";
-$db = "postgres";
-$user = "postgres.xxxxx"; // your user
-$pass = "YOUR_PASSWORD";
+
+$host = "db.YOUR_SUPABASE_ID.supabase.co";
+$dbname = "postgres";
+$user = "postgres";
+$password = "YOUR_DB_PASSWORD";
 
 try {
-$conn = new PDO("pgsql:host=$host;port=5432;dbname=$db",$user,$pass);
-$conn->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+    $conn = new PDO(
+        "pgsql:host=$host;port=5432;dbname=$dbname",
+        $user,
+        $password
+    );
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+} catch (PDOException $e) {
+    echo json_encode([
+        "status"=>"error",
+        "message"=>"DB connection failed"
+    ]);
+    exit;
 }
-catch(PDOException $e){
-echo json_encode(["status"=>"error","message"=>"DB connection failed"]);
-exit;
-}
-?>
