@@ -1,17 +1,16 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-?>
 
-<?php
-header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Content-Type: application/json");
+
+if($_SERVER["REQUEST_METHOD"] === "OPTIONS"){
+    exit;
+}
 
 include "db.php";
 
-/* READ JSON BODY */
 $data = json_decode(file_get_contents("php://input"), true);
 
 if(!$data){
@@ -25,10 +24,12 @@ if(!$data){
 $email = $data["email"];
 $password = $data["password"];
 
-/* CHECK USER */
-$stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
-$stmt->execute([$email]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$query = pg_query_params($conn,
+    "SELECT * FROM users WHERE email=$1",
+    [$email]
+);
+
+$user = pg_fetch_assoc($query);
 
 if(!$user){
     echo json_encode([
@@ -38,22 +39,15 @@ if(!$user){
     exit;
 }
 
-/* VERIFY PASSWORD */
-if(password_verify($password,$user["password"])){
-
-    echo json_encode([
-        "status"=>"success",
-        "user"=>[
-            "id"=>$user["id"],
-            "name"=>$user["name"] ?? "User",
-            "email"=>$user["email"],
-            "role"=>$user["role"]
-        ]
-    ]);
-
-}else{
+if(!password_verify($password, $user["password"])){
     echo json_encode([
         "status"=>"error",
         "message"=>"Wrong password"
     ]);
+    exit;
 }
+
+echo json_encode([
+    "status"=>"success",
+    "user"=>$user
+]);
