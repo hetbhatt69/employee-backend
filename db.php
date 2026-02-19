@@ -1,17 +1,17 @@
 <?php
 
-$host = "aws-0-xxx.pooler.supabase.com";
-$port = "6543";
+$host = "aws-1-ap-southeast-2.pooler.supabase.com";
+$port = "5432";
 $db   = "postgres";
-$user = "postgres";
-$pass = "YOUR_PASSWORD";
+$user = "postgres.wjrdxtzuiywrmuljsltr";
+$pass = "YOUR_PASSWORD"; // paste supabase DB password
 
 $conn = pg_connect("
-host=$host
-port=$port
-dbname=$db
-user=$user
-password=$pass
+    host=$host
+    port=$port
+    dbname=$db
+    user=$user
+    password=$pass
 ");
 
 if(!$conn){
