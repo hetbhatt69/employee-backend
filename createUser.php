@@ -1,22 +1,27 @@
 <?php
-session_start();
 include "db.php";
-
-if($_SESSION["user"]["role"]!="admin"){
- echo json_encode(["status"=>"unauthorized"]);
- exit;
-}
 
 $data=json_decode(file_get_contents("php://input"),true);
 
-$hash=password_hash($data["password"],PASSWORD_DEFAULT);
+$email=$data["email"];
+$password=$data["password"];
 
-$stmt=$conn->prepare("INSERT INTO users(email,password,role) VALUES(?,?,?)");
-$stmt->execute([
-$data["email"],
-$hash,
-$data["role"]
-]);
+$stmt=$conn->prepare("SELECT * FROM users WHERE email=?");
+$stmt->execute([$email]);
+$user=$stmt->fetch(PDO::FETCH_ASSOC);
 
-echo json_encode(["status"=>"created"]);
+if($user){
+    if(password_verify($password,$user["password"])){
+        echo json_encode([
+            "status"=>"success",
+            "role"=>$user["role"],
+            "name"=>$user["name"],
+            "email"=>$user["email"]
+        ]);
+    }else{
+        echo json_encode(["status"=>"error","message"=>"Wrong password"]);
+    }
+}else{
+    echo json_encode(["status"=>"error","message"=>"User not found"]);
+}
 ?>

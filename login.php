@@ -1,35 +1,53 @@
 <?php
-session_start();
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type");
+
 include "db.php";
-include "log.php";
 
-$data=json_decode(file_get_contents("php://input"),true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-$email=$data["email"];
-$password=$data["password"];
+// SAFE CHECK
+if (!$data) {
+    echo json_encode([
+        "status"=>"error",
+        "message"=>"No data received"
+    ]);
+    exit;
+}
 
-$stmt=$conn->prepare("SELECT * FROM users WHERE email=?");
+$email = $data["email"] ?? "";
+$password = $data["password"] ?? "";
+
+if (!$email || !$password) {
+    echo json_encode([
+        "status"=>"error",
+        "message"=>"All fields required"
+    ]);
+    exit;
+}
+
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
 $stmt->execute([$email]);
-$user=$stmt->fetch(PDO::FETCH_ASSOC);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if($user && password_verify($password,$user["password"])){
+if (!$user) {
+    echo json_encode([
+        "status"=>"error",
+        "message"=>"User not found"
+    ]);
+    exit;
+}
 
- $_SESSION["user"]=[
-  "email"=>$user["email"],
-  "role"=>$user["role"]
- ];
-
- logAction($email,"Login Success",$conn);
-
- echo json_encode([
-  "status"=>"success",
-  "user"=>$_SESSION["user"]
- ]);
-
-}else{
-
- logAction($email,"Login Failed",$conn);
-
- echo json_encode(["status"=>"error"]);
+if (password_verify($password, $user["password"])) {
+    echo json_encode([
+        "status"=>"success"
+    ]);
+} else {
+    echo json_encode([
+        "status"=>"error",
+        "message"=>"Wrong password"
+    ]);
 }
 ?>
